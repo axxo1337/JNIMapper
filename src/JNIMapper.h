@@ -19,8 +19,10 @@ public:
 	{
 		using namespace nlohmann;
 		
-		parsed_map = nlohmann::json::parse(memory); 
+		parsed_map = nlohmann::json::parse(memory);
 		
+		printf("JNIMapper =================================\n");
+
 		for (json::iterator it_i = parsed_map.begin(); it_i != parsed_map.end(); ++it_i) 
 		{
 			static bool found_version{ false };
@@ -35,9 +37,11 @@ public:
 
 			if (class_ptr == nullptr)
 			{
-				printf("Failed to get class %s ptr\n", it_i.key());
-				assert(false);
+				printf("    [-] Failed to get class %s ptr\n", it_i.key().c_str());
+				continue;
 			}
+			else
+				printf("    [+] Got class %s\n", it_i.key().c_str());
 
 			auto p_class = std::make_shared<JNIClass>(p_env, class_ptr);
 			classes.emplace(std::pair{ it_i.key(), std::move(p_class) });
@@ -68,7 +72,13 @@ public:
 				else
 					field_id = p_env->GetFieldID(class_ptr, name.c_str(), type.c_str());
 
-				assert(field_id != 0);
+				if (field_id == 0)
+				{
+					printf("      [-] Failed to get field %s\n", it_j.key().c_str());
+					continue;
+				}
+				else
+					printf("      [+] Got field %s\n", it_j.key().c_str());
 
 				std::shared_ptr<JNIField> p_field;
 
@@ -149,7 +159,13 @@ public:
 				else
 					method_id = p_env->GetMethodID(class_ptr, name.c_str(), sig.c_str());
 
-				assert(method_id != 0);
+				if (method_id == 0)
+				{
+					printf("      [-] Failed to get method %s\n", it_j.key().c_str());
+					continue;
+				}
+				else
+					printf("      [+] Got method %s\n", it_j.key().c_str());
 
 				std::shared_ptr<JNIMethod> p_method;
 
