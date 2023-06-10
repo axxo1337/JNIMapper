@@ -1,0 +1,10 @@
+{
+  "mc_version": "1.8.9",
+  "Minecraft": {
+    "name": "ave",
+    "fields": {
+      "theMinecraft": "S|Lave;|S",
+      "rightClickDelayTimer":  "N|I|ap"
+    }
+  }
+}
