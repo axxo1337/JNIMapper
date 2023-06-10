@@ -5,6 +5,9 @@
     "fields": {
       "theMinecraft": "S|Lave;|S",
       "rightClickDelayTimer":  "N|I|ap"
+    },
+    "methods": {
+      "clickMouse": "N|V|aw"
     }
   }
 }
