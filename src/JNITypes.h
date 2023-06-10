@@ -31,7 +31,7 @@ public:
 
 public:
 	std::map<std::string, std::shared_ptr<JNIField>> fields;
-	std::map<std::string, std::shared_ptr<JNIMethod>> method_ids;
+	std::map<std::string, std::shared_ptr<JNIMethod>> methods;
 
 private:
 	JNIEnv* p_env;
@@ -46,7 +46,7 @@ private:
 class JNIField
 {
 public:
-	explicit JNIField(JNIEnv* p_env, JNIClass* parent, jfieldID field_id, bool is_static)
+	JNIField(JNIEnv* p_env, JNIClass* parent, jfieldID field_id, bool is_static)
 		: p_env(p_env), parent(parent), id(field_id), is_static(is_static)
 	{
 	}
@@ -362,7 +362,216 @@ public:
 
 class JNIMethod
 {
+public:
+	JNIMethod(JNIEnv* p_env, JNIClass* parent, jmethodID method_id, bool is_static)
+		: p_env(p_env), parent(parent), id(method_id), is_static(is_static)
+	{
+	}
 
+	JNIClass* GetParent()
+	{
+		return parent;
+	}
+
+	jmethodID GetID()
+	{
+		return id;
+	}
+
+	virtual void CallVoid(jvalue* args = nullptr)
+	{
+	}
+
+	virtual jint CallInt(jvalue* args = nullptr)
+	{
+		return 0;
+	}
+
+	virtual jshort CallShort(jvalue* args = nullptr)
+	{
+		return 0;
+	}
+
+	virtual jlong CallLong(jvalue* args = nullptr)
+	{
+		return 0;
+	}
+
+	virtual jbyte CallByte(jvalue* args = nullptr)
+	{
+		return '\0';
+	}
+
+	virtual jchar CallChar(jvalue* args = nullptr)
+	{
+		return '\0';
+	}
+
+	virtual jboolean CallBoolean(jvalue* args = nullptr)
+	{
+		return false;
+	}
+
+	virtual float CallFloat(jvalue* args = nullptr)
+	{
+		return 0.f;
+	}
+
+	virtual jdouble CallDouble(jvalue* args = nullptr)
+	{
+		return 0;
+	}
+
+	virtual jobject CallObject(jvalue* args = nullptr)
+	{
+		return nullptr;
+	}
+
+protected:
+	JNIEnv* p_env;
+	JNIClass* parent;
+	jmethodID id;
+	bool is_static;
+};
+
+class JNIMethodVoid : public JNIMethod
+{
+public:
+	using JNIMethod::JNIMethod;
+
+	void CallVoid(jvalue* args = nullptr)
+	{
+		if (is_static)
+			return p_env->CallStaticVoidMethodA(parent->GetPtr(), id, args);
+
+		return p_env->CallVoidMethodA(parent->GetInstance(), id, args);
+	}
+};
+
+class JNIMethodInt : public JNIMethod
+{
+public:
+	using JNIMethod::JNIMethod;
+
+	jint CallInt(jvalue* args = nullptr)
+	{
+		if (is_static)
+			return p_env->CallStaticIntMethodA(parent->GetPtr(), id, args);
+
+		return p_env->CallIntMethodA(parent->GetInstance(), id, args);
+	}
+};
+
+class JNIMethodShort : public JNIMethod
+{
+public:
+	using JNIMethod::JNIMethod;
+
+	jshort CallShort(jvalue* args = nullptr)
+	{
+		if (is_static)
+			return p_env->CallStaticShortMethodA(parent->GetPtr(), id, args);
+
+		return p_env->CallShortMethodA(parent->GetInstance(), id, args);
+	}
+};
+
+class JNIMethodLong : public JNIMethod
+{
+public:
+	using JNIMethod::JNIMethod;
+
+	jlong CallLong(jvalue* args = nullptr)
+	{
+		if (is_static)
+			return p_env->CallStaticLongMethodA(parent->GetPtr(), id, args);
+
+		return p_env->CallLongMethodA(parent->GetInstance(), id, args);
+	}
+};
+
+class JNIMethodByte : public JNIMethod
+{
+public:
+	using JNIMethod::JNIMethod;
+
+	jbyte CallByte(jvalue* args = nullptr)
+	{
+		if (is_static)
+			return p_env->CallStaticByteMethodA(parent->GetPtr(), id, args);
+
+		return p_env->CallByteMethodA(parent->GetInstance(), id, args);
+	}
+};
+
+class JNIMethodChar : public JNIMethod
+{
+public:
+	using JNIMethod::JNIMethod;
+
+	jchar CallChar(jvalue* args = nullptr)
+	{
+		if (is_static)
+			return p_env->CallStaticCharMethodA(parent->GetPtr(), id, args);
+
+		return p_env->CallCharMethodA(parent->GetInstance(), id, args);
+	}
+};
+
+class JNIMethodBoolean : public JNIMethod
+{
+public:
+	using JNIMethod::JNIMethod;
+
+	jboolean CallBoolean(jvalue* args = nullptr)
+	{
+		if (is_static)
+			return p_env->CallStaticBooleanMethodA(parent->GetPtr(), id, args);
+
+		return p_env->CallBooleanMethodA(parent->GetInstance(), id, args);
+	}
+};
+
+class JNIMethodFloat : public JNIMethod
+{
+public:
+	using JNIMethod::JNIMethod;
+
+	jfloat CallFloat(jvalue* args = nullptr)
+	{
+		if (is_static)
+			return p_env->CallStaticFloatMethodA(parent->GetPtr(), id, args);
+
+		return p_env->CallFloatMethodA(parent->GetInstance(), id, args);
+	}
+};
+
+class JNIMethodDouble : public JNIMethod
+{
+public:
+	using JNIMethod::JNIMethod;
+
+	jdouble CallDouble(jvalue* args = nullptr)
+	{
+		if (is_static)
+			return p_env->CallStaticDoubleMethodA(parent->GetPtr(), id, args);
+
+		return p_env->CallDoubleMethodA(parent->GetInstance(), id, args);
+	}
+};
+
+class JNIMethodObject : public JNIMethod
+{
+public:
+	using JNIMethod::JNIMethod;
+
+	jobject CallObject(jvalue* args = nullptr)
+	{
+		if (is_static)
+			return p_env->CallStaticObjectMethodA(parent->GetPtr(), id, args);
+
+		return p_env->CallObjectMethodA(parent->GetInstance(), id, args);
+	}
 };
 
 #endif
