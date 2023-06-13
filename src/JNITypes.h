@@ -5,6 +5,7 @@
 
 class JNIField;
 class JNIMethod;
+class JNIClassInstance;
 
 class JNIClass final
 {
@@ -29,9 +30,47 @@ public:
 		instance = new_instance;
 	}
 
+	std::unique_ptr<JNIClassInstance> NewInstance(jobject instance)
+	{
+		return std::make_unique<JNIClassInstance>(p_env, this, instance);
+	}
+
 public:
 	std::map<std::string, std::shared_ptr<JNIField>> fields;
 	std::map<std::string, std::shared_ptr<JNIMethod>> methods;
+
+private:
+	JNIEnv* p_env;
+	jclass ptr;
+	jobject instance{ nullptr };
+};
+
+class JNIClassInstance final
+{
+public:
+	JNIClassInstance(JNIEnv* p_env, JNIClass* inheriter, jobject class_instance)
+		: p_env(p_env), ptr(inheriter->GetPtr()), instance(class_instance), fields(inheriter->fields), methods(inheriter->methods)
+	{
+	}
+
+	jclass GetPtr()
+	{
+		return ptr;
+	}
+
+	jobject GetInstance()
+	{
+		return instance;
+	}
+
+	void SetInstance(jobject new_instance)
+	{
+		instance = new_instance;
+	}
+
+public:
+	std::map<std::string, std::shared_ptr<JNIField>>& fields;
+	std::map<std::string, std::shared_ptr<JNIMethod>>& methods;
 
 private:
 	JNIEnv* p_env;
@@ -303,8 +342,6 @@ public:
 
 	void SetValueFloat(jfloat new_value)
 	{
-		printf("TEST\n");
-
 		if (is_static)
 			return p_env->SetStaticFloatField(parent->GetPtr(), id, new_value);
 

@@ -4,11 +4,51 @@
     "name": "ave",
     "fields": {
       "theMinecraft": "S|Lave;|S",
-      "rightClickDelayTimer":  "N|I|ap"
+      "rightClickDelayTimer":  "N|I|ap",
+      "theWorld": "N|Lbdb;|f",
+      "pointedEntity": "N|Lpk;|i",
+      "playerController": "N|Lbda;|c",
+      "thePlayer": "N|Lbew;|h"
     },
     "methods": {
       "clickMouse": "N|()V|aw",
       "prototyp": "N|I|zxdf"
+    }
+  },
+  "WorldClient": {
+    "name": "bdb",
+    "fields": {
+      "entityList": "N|Ljava/util/Set;|c"
+    },
+    "methods": {
+      "getEntityByID": "N|(I)Lpk;|a",
+      "setWorldTime": "N|(J)V|b"
+    }
+  },
+  "PlayerControllerMP": {
+    "name": "bda",
+    "fields": {
+    },
+    "methods": {
+      "attackEntity": "N|(Lwn;Lpk;)V|a",
+      "prototyp": "N|I|zxdf"
+    }
+  },
+  "Set": {
+    "name": "java/util/Set",
+    "fields": {
+    },
+    "methods": {
+      "iterator": "N|()Ljava/util/Iterator;|iterator"
+    }
+  },
+  "Iterator": {
+    "name": "java/util/Iterator",
+    "fields": {
+    },
+    "methods": {
+      "hasNext": "N|()Z|hasNext",
+      "next": "N|()Ljava/lang/Object;|next"
     }
   }
 }

@@ -21,7 +21,7 @@ public:
 		
 		parsed_map = nlohmann::json::parse(memory);
 		
-		printf("JNIMapper =================================\n");
+		printf("=========================== JNIMapper ===========================\n");
 
 		for (json::iterator it_i = parsed_map.begin(); it_i != parsed_map.end(); ++it_i) 
 		{
@@ -37,11 +37,11 @@ public:
 
 			if (class_ptr == nullptr)
 			{
-				printf("    [-] Failed to get class %s ptr\n", it_i.key().c_str());
+				printf("[-] Failed to get class %s ptr\n", it_i.key().c_str());
 				continue;
 			}
 			else
-				printf("    [+] Got class %s\n", it_i.key().c_str());
+				printf("[+] Got class %s\n", it_i.key().c_str());
 
 			auto p_class = std::make_shared<JNIClass>(p_env, class_ptr);
 			classes.emplace(std::pair{ it_i.key(), std::move(p_class) });
