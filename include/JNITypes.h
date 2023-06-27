@@ -7,9 +7,13 @@ class JNIField;
 class JNIMethod;
 class JNIClassInstance;
 
-class JNIClass final
+class JNIClass
 {
 public:
+	JNIClass()
+	{
+	}
+
 	JNIClass(JNIEnv* p_env, jclass class_ptr)
 		: p_env(p_env), ptr(class_ptr)
 	{
@@ -32,47 +36,14 @@ public:
 
 	std::unique_ptr<JNIClassInstance> NewInstance(jobject instance)
 	{
-		return std::make_unique<JNIClassInstance>(p_env, this, instance);
+		return std::move(std::make_unique<JNIClassInstance>(p_env, this, instance));
 	}
 
 public:
 	std::map<std::string, std::shared_ptr<JNIField>> fields;
 	std::map<std::string, std::shared_ptr<JNIMethod>> methods;
 
-private:
-	JNIEnv* p_env;
-	jclass ptr;
-	jobject instance{ nullptr };
-};
-
-class JNIClassInstance final
-{
-public:
-	JNIClassInstance(JNIEnv* p_env, JNIClass* inheriter, jobject class_instance)
-		: p_env(p_env), ptr(inheriter->GetPtr()), instance(class_instance), fields(inheriter->fields), methods(inheriter->methods)
-	{
-	}
-
-	jclass GetPtr()
-	{
-		return ptr;
-	}
-
-	jobject GetInstance()
-	{
-		return instance;
-	}
-
-	void SetInstance(jobject new_instance)
-	{
-		instance = new_instance;
-	}
-
-public:
-	std::map<std::string, std::shared_ptr<JNIField>>& fields;
-	std::map<std::string, std::shared_ptr<JNIMethod>>& methods;
-
-private:
+protected:
 	JNIEnv* p_env;
 	jclass ptr;
 	jobject instance{ nullptr };
@@ -88,6 +59,11 @@ public:
 	JNIField(JNIEnv* p_env, JNIClass* parent, jfieldID field_id, bool is_static)
 		: p_env(p_env), parent(parent), id(field_id), is_static(is_static)
 	{
+	}
+
+	void SetParent(JNIClass* new_parent)
+	{
+		parent = new_parent;
 	}
 
 	JNIClass* GetParent()
@@ -381,6 +357,9 @@ public:
 		if (is_static)
 			return p_env->GetStaticObjectField(parent->GetPtr(), id);
 
+		if (parent->GetInstance() == nullptr)
+			return nullptr;
+
 		return p_env->GetObjectField(parent->GetInstance(), id);
 	}
 
@@ -403,6 +382,13 @@ public:
 	JNIMethod(JNIEnv* p_env, JNIClass* parent, jmethodID method_id, bool is_static)
 		: p_env(p_env), parent(parent), id(method_id), is_static(is_static)
 	{
+	}
+
+	void SetParent(JNIClass* new_parent)
+	{
+		if (this == nullptr)
+			return;
+		parent = new_parent;
 	}
 
 	JNIClass* GetParent()
@@ -460,6 +446,11 @@ public:
 	}
 
 	virtual jobject CallObject(jvalue* args = nullptr)
+	{
+		return nullptr;
+	}
+
+	virtual jobjectArray CallObjectArray(jvalue* args = nullptr)
 	{
 		return nullptr;
 	}
@@ -607,8 +598,52 @@ public:
 		if (is_static)
 			return p_env->CallStaticObjectMethodA(parent->GetPtr(), id, args);
 
+		if (parent->GetInstance() == nullptr)
+			return nullptr;
+
 		return p_env->CallObjectMethodA(parent->GetInstance(), id, args);
 	}
 };
+
+class JNIMethodObjectArray : public JNIMethod
+{
+public:
+	using JNIMethod::JNIMethod;
+
+	jobjectArray CallObjectArray(jvalue* args = nullptr)
+	{
+		if (is_static)
+			return (jobjectArray)p_env->CallStaticObjectMethodA(parent->GetPtr(), id, args);
+
+		if (parent->GetInstance() == nullptr)
+			return nullptr;
+
+		return (jobjectArray)p_env->CallObjectMethodA(parent->GetInstance(), id, args);
+	}
+};
+
+class JNIClassInstance : public JNIClass
+{
+public:
+	JNIClassInstance(JNIEnv* p_env, JNIClass* inheriter, jobject class_instance)
+	{
+		p_env = p_env;
+		ptr = inheriter->GetPtr();
+		instance = class_instance;
+		fields = inheriter->fields;
+		methods = inheriter->methods;
+
+		for (auto& field : fields)
+		{
+			field.second->SetParent(this);
+		}
+
+		for (auto& method : methods)
+		{
+			method.second->SetParent(this);
+		}
+	}
+};
+
 
 #endif
